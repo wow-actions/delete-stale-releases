@@ -1,7 +1,5 @@
 name: Potential Duplicates
-on:
-  issues:
-    types: [opened, edited]
+on: push
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -16,7 +14,3 @@ jobs:
       - uses: ./
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          filter: |
-            Request ** icon
-            Add ** icon
-            ** icon **
