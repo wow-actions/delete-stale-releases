@@ -41,8 +41,6 @@ export namespace Action {
       return false
     })
 
-    console.log(all.length, releases.length, context, deleteTags)
-
     const clean = async (items: typeof releases) => {
       const stales = latestDays
         ? items.filter((release) => {
@@ -62,21 +60,22 @@ export namespace Action {
             .slice(latestCount)
 
       for (let i = 0, l = stales.length; i < l; i += 1) {
-        // const release = stales[i]
-        // await octokit.repos.deleteRelease({
-        //   ...context.repo,
-        //   release_id: release.id,
-        // })
-        // core.info(`Delete Release "${release.name}"`)
-        // if (deleteTags) {
-        //   await octokit.git.deleteRef({
-        //     ...context.repo,
-        //     ref: `tags/${release.tag_name}`,
-        //   })
-        //   core.info(
-        //     `Delete tag "${release.tag_name}" associated with release "${release.name}"`,
-        //   )
-        // }
+        const release = stales[i]
+        await octokit.repos.deleteRelease({
+          ...context.repo,
+          release_id: release.id,
+        })
+        core.info(`Delete Release "${release.name}"`)
+
+        if (deleteTags) {
+          await octokit.git.deleteRef({
+            ...context.repo,
+            ref: `tags/${release.tag_name}`,
+          })
+          core.info(
+            `Delete tag "${release.tag_name}" associated with release "${release.name}"`,
+          )
+        }
       }
     }
 
