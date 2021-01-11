@@ -93,7 +93,6 @@ export namespace Action {
       })
 
       const groupNames = Object.keys(groups)
-      console.log(groupNames)
       for (let i = 0, l = groupNames.length; i < l; i += 1) {
         await clean(groups[groupNames[i]])
       }
