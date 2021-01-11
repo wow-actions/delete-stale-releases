@@ -15,3 +15,4 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           delete_tags: true
+          keep_latest_days: 90
