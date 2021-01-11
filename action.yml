@@ -1,0 +1,45 @@
+name: Delete Stale Releases
+description: Delete stale releases
+author: bubkoo <bubkoo.wy@gmail.com>
+inputs:
+  GITHUB_TOKEN:
+    description: Your GitHub token for authentication.
+    required: true
+  keep_latest_count:
+    description: Specifies the number of latest releases be keeped (sorted by `created_at`) to keep. Pass `0` if you want to delete all releases.
+    required: false
+    default: 3
+  keep_latest_days:
+    description: Specifies the day count from now and releases in which duration will be keeped.
+    required: false
+  delete_tags:
+    description: Specifies whether to delete tags associated to older releases or not. Older tags without any associated releases will not be deleted.
+    required: false
+    default: false
+  key:
+    description: Specifies the key of the release object and corresponding value will be matched with `include` and `exclude` pattern.
+    required: false
+    default: name
+  include:
+    description: Specifies keyworlds to match with the value specified by `key` and matched releases will be deleted.
+    required: false
+  exclude:
+    description: Specifies keyworlds to match with the value specified by `key` and matched releases will not be keeped.
+    required: false
+  include_draft:
+    description: Specifies whether draft releases should be deleted or not.
+    required: false
+    default: true
+  include_prerelease:
+    description: Specifies whether prerelease releases should be deleted or not.
+    required: false
+    default: true
+  group:
+    description: Specifies the regrex or substring to generate the group name. Work with the value specified by `key`, matched substring will be replaced with empty string then other strings be combined to group name. When `group` is specified the `keep_latest_count` and `keep_latest_days` will be base on the grouped releases. It's useful to delete releases in mono-repo which contains many releases of sub-repos.
+    required: false
+runs:
+  using: node12
+  main: dist/index.js
+branding:
+  icon: delete
+  color: red # gray-dark purple red orange green blue yellow black white
