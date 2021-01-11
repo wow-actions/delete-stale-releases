@@ -22,14 +22,8 @@ export namespace Action {
     const excludes = Util.getFilter('exclude')
     const octokit = Util.getOctokit()
 
-    const res = await octokit.repos.listReleases({
-      ...context.repo,
-      per_page: 100,
-    })
-
-    console.log(res, deleteTags)
-
-    const releases = res.data.filter((release) => {
+    const all = await Util.getAllReleases(octokit)
+    const releases = all.filter((release) => {
       const val = release[key] || ''
       const included = includes.length <= 0 || anymatch(val, includes)
       if (included) {
@@ -46,6 +40,8 @@ export namespace Action {
 
       return false
     })
+
+    console.log(all.length, releases.length, context, deleteTags)
 
     const clean = async (items: typeof releases) => {
       const stales = latestDays
@@ -98,7 +94,7 @@ export namespace Action {
       })
 
       const groupNames = Object.keys(groups)
-      console.log(groups)
+      console.log(groupNames)
       for (let i = 0, l = groupNames.length; i < l; i += 1) {
         await clean(groups[groupNames[i]])
       }

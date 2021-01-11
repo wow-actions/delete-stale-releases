@@ -24,7 +24,7 @@ inputs:
     description: Specifies keyworlds to match with the value specified by `key` and matched releases will be deleted.
     required: false
   exclude:
-    description: Specifies keyworlds to match with the value specified by `key` and matched releases will not be keeped.
+    description: Specifies keyworlds to match with the value specified by `key` and matched releases will be keeped.
     required: false
   include_draft:
     description: Specifies whether draft releases should be deleted or not.
