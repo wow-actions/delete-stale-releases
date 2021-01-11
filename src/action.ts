@@ -25,7 +25,7 @@ export namespace Action {
     const all = await Util.getAllReleases(octokit)
     const releases = all.filter((release) => {
       const val = release[key] || ''
-      const included = includes.length <= 0 || anymatch(val, includes)
+      const included = includes.length <= 0 || anymatch(includes, val)
       if (included) {
         if (release.draft && !draft) {
           return false
@@ -35,7 +35,7 @@ export namespace Action {
           return false
         }
 
-        return excludes.length <= 0 || !anymatch(val, excludes)
+        return excludes.length <= 0 || !anymatch(excludes, val)
       }
 
       return false
