@@ -27,8 +27,7 @@ export namespace Action {
       per_page: 100,
     })
 
-    console.log(res)
-    console.log(res.data.length)
+    console.log(res, deleteTags)
 
     const releases = res.data.filter((release) => {
       const val = release[key] || ''
@@ -50,7 +49,12 @@ export namespace Action {
 
     const clean = async (items: typeof releases) => {
       const stales = latestDays
-        ? items.filter((release) => {})
+        ? items.filter((release) => {
+            const now = new Date().getTime()
+            const old = new Date(release.created_at).getTime()
+            const days = (now - old) / (1000 * 60 * 60 * 24)
+            return days > latestDays
+          })
         : items.length < latestCount
         ? items
         : items
@@ -62,24 +66,21 @@ export namespace Action {
             .slice(latestCount)
 
       for (let i = 0, l = stales.length; i < l; i += 1) {
-        const release = stales[i]
-
-        await octokit.repos.deleteRelease({
-          ...context.repo,
-          release_id: release.id,
-        })
-
-        core.info(`Delete Release "${release.name}"`)
-
-        if (deleteTags) {
-          await octokit.git.deleteRef({
-            ...context.repo,
-            ref: `tags/${release.tag_name}`,
-          })
-          core.info(
-            `Delete tag "${release.tag_name}" associated with release "${release.name}"`,
-          )
-        }
+        // const release = stales[i]
+        // await octokit.repos.deleteRelease({
+        //   ...context.repo,
+        //   release_id: release.id,
+        // })
+        // core.info(`Delete Release "${release.name}"`)
+        // if (deleteTags) {
+        //   await octokit.git.deleteRef({
+        //     ...context.repo,
+        //     ref: `tags/${release.tag_name}`,
+        //   })
+        //   core.info(
+        //     `Delete tag "${release.tag_name}" associated with release "${release.name}"`,
+        //   )
+        // }
       }
     }
 
