@@ -22,6 +22,9 @@ export namespace Action {
     const excludes = Util.getFilter('exclude')
     const octokit = Util.getOctokit()
 
+    core.debug(`includes: ${JSON.stringify(includes, null, 2)}`)
+    core.debug(`excludes: ${JSON.stringify(excludes, null, 2)}`)
+
     const all = await Util.getAllReleases(octokit)
     const releases = all.filter((release) => {
       const val = release[key] || ''
@@ -40,6 +43,8 @@ export namespace Action {
 
       return false
     })
+
+    core.debug(`Filtered Releases: ${JSON.stringify(releases, null, 2)}`)
 
     const clean = async (items: typeof releases) => {
       const stales = latestDays
