@@ -1,7 +1,7 @@
 {
   "name": "delete-stale-releases",
   "description": "Github Action to delete stale releases.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist/index.js",
   "repository": "https://github.com/bubkoo/delete-stale-releases",
   "author": "bubkoo <bubkoo.wy@gmail.com>",

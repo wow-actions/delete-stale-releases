@@ -93,6 +93,7 @@ export namespace Action {
       })
 
       const groupNames = Object.keys(groups)
+      core.info(`Groups: ${JSON.stringify(groupNames, null, 2)}`)
       for (let i = 0, l = groupNames.length; i < l; i += 1) {
         await clean(groups[groupNames[i]])
       }
