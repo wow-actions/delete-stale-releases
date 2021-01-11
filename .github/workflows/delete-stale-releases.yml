@@ -1,4 +1,4 @@
-name: Potential Duplicates
+name: Delete Stale Releases
 on: push
 jobs:
   test:
@@ -14,3 +14,4 @@ jobs:
       - uses: ./
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          delete_tags: true

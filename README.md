@@ -33,7 +33,7 @@ jobs:
 - `exclude`: Specifies keyworlds to match with the value specified by `key` and matched releases will not be keeped.
 - `include_draft`: Specifies whether draft releases should be deleted or not. Default `true`.
 - `include_prerelease`: Specifies whether prerelease releases should be deleted or not. Default `true`.
-- `group`: Specifies the regex or substring to generate the group name. Work with the value specified by `key`, matched substring will be replaced with empty string and other strings be combined to group name. When `group` is specified the `keep_latest_count` and `keep_latest_days` will base on the grouped releases. It's useful to delete releases in mono-repo which contains releases of sub-repos.
+- `group`: Specifies the regex or substring to generate the group name. Match with the release name and matched substring will be replaced with empty string and other strings be combined to group name. When `group` is specified the `keep_latest_count` and `keep_latest_days` will base on the grouped releases. It's useful to delete releases in mono-repo which contains releases of sub-repos.
 
 ## License
 

@@ -7,6 +7,15 @@ export namespace Action {
   export async function run() {
     const context = github.context
     const key = (core.getInput('key') || 'name') as 'name' | 'tag_name'
+    const group = core.getInput('group')
+    const keepLatestCount = core.getInput('keep_latest_count') || '3'
+    const keepLatestDays = core.getInput('keep_latest_days')
+    const deleteTags = core.getInput('delete_tags') === 'true'
+    let latestCount = parseInt(keepLatestCount, 10)
+    if (isNaN(latestCount)) {
+      latestCount = 3
+    }
+    const latestDays = parseInt(keepLatestDays, 10)
     const draft = core.getInput('include_draft') !== 'false'
     const prerelease = core.getInput('include_prerelease') !== 'false'
     const includes = Util.getFilter('include')
@@ -21,8 +30,10 @@ export namespace Action {
     console.log(res)
     console.log(res.data.length)
 
-    const releases = res.data
-      .filter((release) => {
+    const releases = res.data.filter((release) => {
+      const val = release[key] || ''
+      const included = includes.length <= 0 || anymatch(val, includes)
+      if (included) {
         if (release.draft && !draft) {
           return false
         }
@@ -31,27 +42,67 @@ export namespace Action {
           return false
         }
 
-        const raw = release[key] || ''
-        const included = includes.length <= 0 || anymatch(raw, includes)
-        if (included) {
-          return excludes.length <= 0 || !anymatch(raw, excludes)
+        return excludes.length <= 0 || !anymatch(val, excludes)
+      }
+
+      return false
+    })
+
+    const clean = async (items: typeof releases) => {
+      const stales = latestDays
+        ? items.filter((release) => {})
+        : items.length < latestCount
+        ? items
+        : items
+            .sort(
+              (a, b) =>
+                new Date(a.created_at).getTime() -
+                new Date(b.created_at).getTime(),
+            )
+            .slice(latestCount)
+
+      for (let i = 0, l = stales.length; i < l; i += 1) {
+        const release = stales[i]
+
+        await octokit.repos.deleteRelease({
+          ...context.repo,
+          release_id: release.id,
+        })
+
+        core.info(`Delete Release "${release.name}"`)
+
+        if (deleteTags) {
+          await octokit.git.deleteRef({
+            ...context.repo,
+            ref: `tags/${release.tag_name}`,
+          })
+          core.info(
+            `Delete tag "${release.tag_name}" associated with release "${release.name}"`,
+          )
+        }
+      }
+    }
+
+    if (group) {
+      const groups: { [name: string]: typeof releases } = {}
+      releases.forEach((release) => {
+        const name = release.name
+          ? release.name.replace(new RegExp(group, 'ig'), '')
+          : ''
+        if (!groups[name]) {
+          groups[name] = []
         }
 
-        return false
+        groups[name].push(release)
       })
-      .sort(
-        (a, b) =>
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-      )
 
-    console.log(releases)
-
-    // for (let i = 0, l = releases.length; i < l; i += 1) {
-    //   const release = releases[i]
-    //   await octokit.repos.deleteRelease({
-    //     ...context.repo,
-    //     release_id: release.id,
-    //   })
-    // }
+      const groupNames = Object.keys(groups)
+      console.log(groups)
+      for (let i = 0, l = groupNames.length; i < l; i += 1) {
+        await clean(groups[groupNames[i]])
+      }
+    } else {
+      await clean(releases)
+    }
   }
 }
