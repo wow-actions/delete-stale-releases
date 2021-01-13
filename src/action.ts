@@ -70,7 +70,6 @@ export namespace Action {
           ...context.repo,
           release_id: release.id,
         })
-        core.info(`Delete Release "${release.name}"`)
 
         if (deleteTags) {
           await octokit.git.deleteRef({
@@ -78,8 +77,10 @@ export namespace Action {
             ref: `tags/${release.tag_name}`,
           })
           core.info(
-            `Delete tag "${release.tag_name}" associated with release "${release.name}"`,
+            `Delete Release "${release.name}" and associated tag "${release.tag_name}"`,
           )
+        } else {
+          core.info(`Delete Release "${release.name}"`)
         }
       }
     }
