@@ -1,5 +1,5 @@
 name: Delete Stale Releases
-description: Delete stale releases
+description: Automatically deleting stale releases
 author: bubkoo <bubkoo.wy@gmail.com>
 inputs:
   GITHUB_TOKEN:

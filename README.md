@@ -1,6 +1,6 @@
 # delete-stale-releases
 
-> Github Action to delete stale releases.
+Automatically delete stale releases.
 
 Create `.github/workflows/delete-stale-releases.yml` in the default branch:
 
@@ -15,7 +15,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     steps:
-      - uses: bubkoo/delete-stale-releases@v1
+      - uses: wow-actions/delete-stale-releases@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           keep_latest_count: 3
