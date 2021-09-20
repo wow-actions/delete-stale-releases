@@ -19,8 +19,8 @@ export namespace Util {
   }
 
   function getReleases(octokit: ReturnType<typeof getOctokit>, page?: number) {
-    const context = github.context
-    return octokit.repos.listReleases({
+    const { context } = github
+    return octokit.rest.repos.listReleases({
       ...context.repo,
       page,
       per_page: 100,
@@ -30,7 +30,7 @@ export namespace Util {
   export async function getAllReleases(octokit: ReturnType<typeof getOctokit>) {
     const res = await getReleases(octokit)
     const releases = res.data || []
-    const link = res.headers.link
+    const { link } = res.headers
     const matches = link ? link.match(/[&|?]page=\d+/gim) : null
     if (matches) {
       const nums = matches.map((item) => parseInt(item.split('=')[1], 10))

@@ -5,14 +5,14 @@ import { Util } from './util'
 
 export namespace Action {
   export async function run() {
-    const context = github.context
+    const { context } = github
     const key = (core.getInput('key') || 'name') as 'name' | 'tag_name'
     const group = core.getInput('group')
     const keepLatestCount = core.getInput('keep_latest_count') || '3'
     const keepLatestDays = core.getInput('keep_latest_days')
     const deleteTags = core.getInput('delete_tags') === 'true'
     let latestCount = parseInt(keepLatestCount, 10)
-    if (isNaN(latestCount)) {
+    if (Number.isNaN(latestCount)) {
       latestCount = 3
     }
     const latestDays = parseInt(keepLatestDays, 10)
@@ -66,13 +66,13 @@ export namespace Action {
 
       for (let i = 0, l = stales.length; i < l; i += 1) {
         const release = stales[i]
-        await octokit.repos.deleteRelease({
+        await octokit.rest.repos.deleteRelease({
           ...context.repo,
           release_id: release.id,
         })
 
         if (deleteTags) {
-          await octokit.git.deleteRef({
+          await octokit.rest.git.deleteRef({
             ...context.repo,
             ref: `tags/${release.tag_name}`,
           })
