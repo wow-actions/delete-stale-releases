@@ -24,6 +24,10 @@ jobs:
 
 ### Inputs
 
+Various inputs are defined to let you configure the action:
+
+> Note: [Workflow command and parameter names are not case-sensitive](https://docs.github.com/en/free-pro-team@latest/actions/reference/workflow-commands-for-github-actions#about-workflow-commands).
+
 | Name | Description | Default |
 | --- | --- | --- |
 | `GITHUB_TOKEN` | The GitHub token for authentication |  |
