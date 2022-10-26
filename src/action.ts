@@ -46,6 +46,8 @@ export namespace Action {
 
     core.debug(`Filtered Releases: ${JSON.stringify(releases, null, 2)}`)
 
+    const deletions: any[] = []
+
     const clean = async (items: typeof releases) => {
       const stales = latestDays
         ? items.filter((release) => {
@@ -82,6 +84,7 @@ export namespace Action {
         } else {
           core.info(`Delete Release "${release.name}"`)
         }
+        deletions.push(release)
       }
     }
 
@@ -106,5 +109,7 @@ export namespace Action {
     } else {
       await clean(releases)
     }
+
+    core.setOutput('releases', deletions)
   }
 }

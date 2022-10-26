@@ -41,6 +41,12 @@ Various inputs are defined to let you configure the action:
 | `include_prerelease` | Whether prerelease releases should be deleted | `true` |
 | `group` | The regex or substring to generate the group name. Be matched with the release name and matched substring will be replaced with empty string and other strings be combined to group name. When `group` is specified the `keep_latest_count` and `keep_latest_days` will base on the grouped releases. It's useful to delete releases in mono-repo which contains releases of sub-repos. |  |
 
+### Outputs
+
+| Name       | Description                                                     |
+| ---------- | --------------------------------------------------------------- |
+| `releases` | The deleted releases converted to a string via `JSON.stringify` |
+
 ## License
 
 The scripts and documentation in this project are released under the [MIT License](LICENSE).

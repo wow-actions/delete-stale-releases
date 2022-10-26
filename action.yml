@@ -37,6 +37,9 @@ inputs:
   group:
     description: Specifies the regrex or substring to generate the group name. Match with the release name and matched substring will be replaced with empty string then other strings be combined to group name. When `group` is specified the `keep_latest_count` and `keep_latest_days` will be base on the grouped releases. It's useful to delete releases in mono-repo which contains many releases of sub-repos.
     required: false
+outputs:
+  releases:
+    description: The deleted releases converted to a string via `JSON.stringify`.
 runs:
   using: node16
   main: dist/index.js
