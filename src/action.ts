@@ -11,13 +11,19 @@ export namespace Action {
     const keepLatestCount = core.getInput('keep_latest_count') || '3'
     const keepLatestDays = core.getInput('keep_latest_days')
     const deleteTags = core.getInput('delete_tags') === 'true'
-    let keepedCount = parseInt(keepLatestCount, 10)
-    if (Number.isNaN(keepedCount)) {
-      keepedCount = 3
-    }
-    const keepedDays = parseInt(keepLatestDays, 10)
     const draft = core.getInput('include_draft') !== 'false'
     const prerelease = core.getInput('include_prerelease') !== 'false'
+
+    let keepedCount = parseInt(keepLatestCount, 10)
+    if (Number.isNaN(keepedCount) || !Number.isFinite(keepedCount)) {
+      keepedCount = 3
+    }
+
+    let keepedDays = keepLatestDays ? parseInt(keepLatestDays, 10) : 0
+    if (Number.isNaN(keepedDays) || !Number.isFinite(keepedDays)) {
+      keepedDays = 0
+    }
+
     const includes = Util.getFilter('include')
     const excludes = Util.getFilter('exclude')
     const octokit = Util.getOctokit()
@@ -44,30 +50,40 @@ export namespace Action {
       return false
     })
 
-    core.debug(`Filtered Releases: ${JSON.stringify(releases, null, 2)}`)
+    core.info(`Filtered releases count: ${releases.length}`)
+    core.debug(
+      `Filtered Releases: ${JSON.stringify(
+        releases.map((r) => r.tag_name),
+        null,
+        2,
+      )}`,
+    )
 
     const deletions: any[] = []
 
     const clean = async (items: typeof releases) => {
-      const stales = keepedDays
-        ? items.filter((release) => {
-            const now = new Date().getTime()
-            const old = new Date(release.created_at).getTime()
-            const days = (now - old) / (1000 * 60 * 60 * 24)
-            return days > keepedDays
-          })
-        : items.length <= keepedCount
-        ? []
-        : items
-            .sort(
-              (a, b) =>
-                new Date(a.created_at).getTime() -
-                new Date(b.created_at).getTime(),
-            )
-            .slice(keepedCount)
+      let stales: typeof releases
+      if (keepedDays > 0) {
+        stales = items.filter((release) => {
+          const now = new Date().getTime()
+          const old = new Date(release.created_at).getTime()
+          const days = (now - old) / (1000 * 60 * 60 * 24)
+          return days > keepedDays
+        })
+      } else if (keepedCount < 0) {
+        stales = items
+      } else {
+        items
+          .sort(
+            (a, b) =>
+              new Date(a.created_at).getTime() -
+              new Date(b.created_at).getTime(),
+          )
+          .slice(keepedCount)
+      }
 
-      for (let i = 0, l = stales.length; i < l; i += 1) {
-        const release = stales[i]
+      for (let i = 0, l = stales!.length; i < l; i += 1) {
+        const release = stales![i]
         await octokit.rest.repos.deleteRelease({
           ...context.repo,
           release_id: release.id,
