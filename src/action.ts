@@ -26,11 +26,11 @@ export namespace Action {
 
     const includes = Util.getFilter('include')
     const excludes = Util.getFilter('exclude')
-    const octokit = Util.getOctokit()
 
     core.debug(`includes: ${JSON.stringify(includes, null, 2)}`)
     core.debug(`excludes: ${JSON.stringify(excludes, null, 2)}`)
 
+    const octokit = Util.getOctokit()
     const all = await Util.getAllReleases(octokit)
     const releases = all.filter((release) => {
       const val = release[key] || ''
@@ -124,6 +124,21 @@ export namespace Action {
       }
     } else {
       await clean(releases)
+
+      // clean other tags not associated with release
+      if (deleteTags) {
+        if (keepedDays <= 0 && keepedCount < 0) {
+          const tags = await Util.getAllTags(octokit)
+          for (let i = 0; i < tags.length; i += 1) {
+            const tag = tags[i]
+            await octokit.rest.git.deleteRef({
+              ...context.repo,
+              ref: `tags/${tag.name}`,
+            })
+            core.info(`Delete tag "${tag.name}"`)
+          }
+        }
+      }
     }
 
     core.setOutput('releases', deletions)

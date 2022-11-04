@@ -27,6 +27,35 @@ export namespace Util {
     })
   }
 
+  function getTags(octokit: ReturnType<typeof getOctokit>, page?: number) {
+    const { context } = github
+    return octokit.rest.repos.listTags({
+      ...context.repo,
+      page,
+      per_page: 100,
+    })
+  }
+
+  export async function getAllTags(octokit: ReturnType<typeof getOctokit>) {
+    const res = await getTags(octokit)
+    const tags = res.data || []
+    const { link } = res.headers
+    const matches = link ? link.match(/[&|?]page=\d+/gim) : null
+    if (matches) {
+      const nums = matches.map((item) => parseInt(item.split('=')[1], 10))
+      const min = Math.min(...nums)
+      const max = Math.max(...nums)
+      for (let i = min; i <= max; i += 1) {
+        const { data } = await getTags(octokit, i)
+        if (data) {
+          tags.push(...data)
+        }
+      }
+    }
+
+    return tags
+  }
+
   export async function getAllReleases(octokit: ReturnType<typeof getOctokit>) {
     const res = await getReleases(octokit)
     const releases = res.data || []
