@@ -11,11 +11,11 @@ export namespace Action {
     const keepLatestCount = core.getInput('keep_latest_count') || '3'
     const keepLatestDays = core.getInput('keep_latest_days')
     const deleteTags = core.getInput('delete_tags') === 'true'
-    let latestCount = parseInt(keepLatestCount, 10)
-    if (Number.isNaN(latestCount)) {
-      latestCount = 3
+    let keepedCount = parseInt(keepLatestCount, 10)
+    if (Number.isNaN(keepedCount)) {
+      keepedCount = 3
     }
-    const latestDays = parseInt(keepLatestDays, 10)
+    const keepedDays = parseInt(keepLatestDays, 10)
     const draft = core.getInput('include_draft') !== 'false'
     const prerelease = core.getInput('include_prerelease') !== 'false'
     const includes = Util.getFilter('include')
@@ -49,22 +49,22 @@ export namespace Action {
     const deletions: any[] = []
 
     const clean = async (items: typeof releases) => {
-      const stales = latestDays
+      const stales = keepedDays
         ? items.filter((release) => {
             const now = new Date().getTime()
             const old = new Date(release.created_at).getTime()
             const days = (now - old) / (1000 * 60 * 60 * 24)
-            return days > latestDays
+            return days > keepedDays
           })
-        : items.length < latestCount
-        ? items
+        : items.length <= keepedCount
+        ? []
         : items
             .sort(
               (a, b) =>
                 new Date(a.created_at).getTime() -
                 new Date(b.created_at).getTime(),
             )
-            .slice(latestCount)
+            .slice(keepedCount)
 
       for (let i = 0, l = stales.length; i < l; i += 1) {
         const release = stales[i]
