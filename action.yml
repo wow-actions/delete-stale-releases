@@ -5,6 +5,10 @@ inputs:
   GITHUB_TOKEN:
     description: Your GitHub token for authentication.
     required: true
+  dry-run:
+    description: Only list releases will be deleted.
+    required: false
+    default: false
   keep_latest_count:
     description: Specifies the number of latest releases be keeped (sorted by `created_at`) to keep. Pass `0` if you want to delete all releases.
     required: false
@@ -40,6 +44,8 @@ inputs:
 outputs:
   releases:
     description: The deleted releases converted to a string via `JSON.stringify`.
+  tags:
+    description: The deleted tags converted to a string via `JSON.stringify`.
 runs:
   using: node16
   main: dist/index.js

@@ -6,6 +6,7 @@ import { Util } from './util'
 export namespace Action {
   export async function run() {
     const { context } = github
+    const dryRun = core.getBooleanInput('dry-run')
     const key = (core.getInput('key') || 'name') as 'name' | 'tag_name'
     const group = core.getInput('group')
     const keepLatestCount = core.getInput('keep_latest_count') || '3'
@@ -59,7 +60,8 @@ export namespace Action {
       )}`,
     )
 
-    const deletions: any[] = []
+    const deletedTags: string[] = []
+    const deletedReleases: any[] = []
 
     const clean = async (items: typeof releases) => {
       let stales: typeof releases
@@ -84,23 +86,29 @@ export namespace Action {
 
       for (let i = 0, l = stales!.length; i < l; i += 1) {
         const release = stales![i]
-        await octokit.rest.repos.deleteRelease({
-          ...context.repo,
-          release_id: release.id,
-        })
+        if (!dryRun) {
+          await octokit.rest.repos.deleteRelease({
+            ...context.repo,
+            release_id: release.id,
+          })
+        }
 
         if (deleteTags) {
-          await octokit.rest.git.deleteRef({
-            ...context.repo,
-            ref: `tags/${release.tag_name}`,
-          })
+          if (!dryRun) {
+            await octokit.rest.git.deleteRef({
+              ...context.repo,
+              ref: `tags/${release.tag_name}`,
+            })
+          }
+
+          deletedTags.push(release.tag_name)
           core.info(
             `Delete Release "${release.name}" and associated tag "${release.tag_name}"`,
           )
         } else {
           core.info(`Delete Release "${release.name}"`)
         }
-        deletions.push(release)
+        deletedReleases.push(release)
       }
     }
 
@@ -118,29 +126,33 @@ export namespace Action {
       })
 
       const groupNames = Object.keys(groups)
-      core.info(`Groups: ${JSON.stringify(groupNames, null, 2)}`)
       for (let i = 0, l = groupNames.length; i < l; i += 1) {
+        core.info(`Delete releases in group: ${groupNames[i]}`)
         await clean(groups[groupNames[i]])
       }
     } else {
       await clean(releases)
+    }
 
-      // clean other tags not associated with release
-      if (deleteTags) {
-        if (keepedDays <= 0 && keepedCount < 0) {
-          const tags = await Util.getAllTags(octokit)
-          for (let i = 0; i < tags.length; i += 1) {
-            const tag = tags[i]
+    if (deleteTags) {
+      if (keepedDays <= 0 && keepedCount < 0) {
+        core.info('Delete tags not associated with release')
+        const tags = await Util.getAllTags(octokit)
+        for (let i = 0; i < tags.length; i += 1) {
+          const tag = tags[i]
+          if (!dryRun) {
             await octokit.rest.git.deleteRef({
               ...context.repo,
               ref: `tags/${tag.name}`,
             })
-            core.info(`Delete tag "${tag.name}"`)
           }
+          deletedTags.push(tag.name)
+          core.info(`Delete tag "${tag.name}"`)
         }
       }
     }
 
-    core.setOutput('releases', deletions)
+    core.setOutput('tags', deletedTags)
+    core.setOutput('releases', deletedReleases)
   }
 }

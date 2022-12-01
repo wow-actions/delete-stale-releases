@@ -14,5 +14,7 @@ jobs:
       - uses: ./
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          include: '*rc*'
           delete_tags: true
           keep_latest_days: 90
+          dry-run: true
